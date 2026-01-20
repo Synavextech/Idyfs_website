@@ -52,11 +52,11 @@ app.use((req, res, next) => {
     if (app.get("env") === "development") {
         await setupVite(app, server);
     } else {
-        setupVite(app, server);
+        serveStatic(app);
     }
 
-    const PORT = 5000;
-    server.listen(PORT, "0.0.0.0", () => {
+    const PORT = process.env.PORT || 5000;
+    server.listen(Number(PORT), "0.0.0.0", () => {
         log(`serving on port ${PORT}`);
     });
 })();
