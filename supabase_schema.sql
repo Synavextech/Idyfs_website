@@ -123,11 +123,6 @@ alter table public.subscriptions enable row level security;
 create policy "Users can view own subscriptions." on public.subscriptions
   for select using (auth.uid() = user_id);
 
--- Only service role or Edge Functions should probably manage subscriptions technically,
--- but we can allow users to "insert" if we trust the client flow or verify later.
--- Ideally, webhook handlers (service role) manage this. 
--- For now, let's allow authenticated users to view.
-
 -- Create certificates table
 create table public.certificates (
   id uuid default uuid_generate_v4() primary key,
@@ -204,11 +199,6 @@ create policy "Admins can manage all bookings." on public.bookings
       where id = auth.uid() and role = 'admin'
     )
   );
-
--- Storage bucket for events (Note: Might require manual UI confirmation or dashboard setup in some environments, but this is the SQL)
--- insert into storage.buckets (id, name, public)
--- values ('event-media', 'event-media', true)
--- on conflict (id) do nothing;
 
 -- Storage policies for event-media bucket
 create policy "Media is viewable by everyone." on storage.objects

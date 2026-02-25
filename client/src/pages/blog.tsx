@@ -28,7 +28,12 @@ export default function Blog() {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data as any as BlogWithComments[]; // Supabase return type casting
+            return data.map((blog: any) => ({
+                ...blog,
+                imageUrl: blog.image_url || blog.imageUrl,
+                createdAt: blog.created_at || blog.createdAt,
+                authorId: blog.author_id || blog.authorId,
+            })) as any as BlogWithComments[];
         }
     });
 

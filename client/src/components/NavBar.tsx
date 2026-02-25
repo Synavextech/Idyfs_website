@@ -35,24 +35,24 @@ export default function NavBar() {
         <nav className="sticky top-0 z-50 w-full border-b bg-primary text-white shadow-sm">
             <div className="container mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
-                    <Link href="/">
-                        <a className="text-xl font-bold tracking-tight">IDYFS</a>
+                    <Link href="/" className="text-xl font-bold tracking-tight">
+                        IDYFS
                     </Link>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-6">
                         {navLinks.map((link) => (
-                            <Link key={link.href} href={link.href}>
-                                <a
-                                    className={cn(
-                                        "text-sm font-medium transition-colors hover:text-accent-foreground/80 px-3 py-2 rounded-md",
-                                        link.title === "Become a Member"
-                                            ? "bg-[#b8240d] text-white hover:bg-[#b8240d]/90 shadow-md"
-                                            : location === link.href ? "text-accent font-bold" : "text-white/90"
-                                    )}
-                                >
-                                    {link.title}
-                                </a>
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                    "text-sm font-medium transition-colors hover:text-accent-foreground/80 px-3 py-2 rounded-md",
+                                    link.title === "Become a Member"
+                                        ? "bg-[#b8240d] text-white hover:bg-[#b8240d]/90 shadow-md"
+                                        : location === link.href ? "text-accent font-bold" : "text-white/90"
+                                )}
+                            >
+                                {link.title}
                             </Link>
                         ))}
                         {user ? (
@@ -67,8 +67,8 @@ export default function NavBar() {
                             </Button>
                         ) : (
                             <div className="flex items-center space-x-4">
-                                <Link href="/auth">
-                                    <a className="text-sm font-medium text-white/90 hover:text-white transition-colors">Login/Sign Up</a>
+                                <Link href="/auth" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                                    Login/Sign Up
                                 </Link>
                             </div>
                         )}
@@ -91,16 +91,16 @@ export default function NavBar() {
                 <div className="md:hidden border-t border-primary/20 bg-primary">
                     <div className="flex flex-col space-y-2 p-4">
                         {navLinks.map((link) => (
-                            <Link key={link.href} href={link.href}>
-                                <a
-                                    onClick={() => setIsOpen(false)}
-                                    className={cn(
-                                        "text-sm font-medium transition-colors hover:bg-primary/80 p-2 rounded-md",
-                                        location === link.href ? "text-accent font-bold" : "text-white/90"
-                                    )}
-                                >
-                                    {link.title}
-                                </a>
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setIsOpen(false)}
+                                className={cn(
+                                    "text-sm font-medium transition-colors hover:bg-primary/80 p-2 rounded-md",
+                                    location === link.href ? "text-accent font-bold" : "text-white/90"
+                                )}
+                            >
+                                {link.title}
                             </Link>
                         ))}
                         {user && (

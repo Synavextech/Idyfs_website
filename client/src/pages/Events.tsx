@@ -1,11 +1,12 @@
 
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Event, Booking } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, MapPin, CheckCircle } from "lucide-react";
+import { Loader2, Calendar, MapPin, CheckCircle, X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
@@ -57,10 +58,31 @@ function StripePaymentForm({ event, onSuccess }: { event: Event; onSuccess: (pay
 
 export default function Events() {
     const { user } = useAuth();
+    const [, setLocation] = useLocation();
     const { toast } = useToast();
     const [bookingEvent, setBookingEvent] = useState<Event | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | null>(null);
     const [clientSecret, setClientSecret] = useState("");
+    const [selectedEventForGallery, setSelectedEventForGallery] = useState<Event | null>(null);
+    const [currentGalleryImageIndex, setCurrentGalleryImageIndex] = useState(0);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+    const [isShuffled, setIsShuffled] = useState(false);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isAutoPlaying && selectedEventForGallery?.images && selectedEventForGallery.images.length > 1) {
+            interval = setInterval(() => {
+                if (isShuffled) {
+                    setCurrentGalleryImageIndex(Math.floor(Math.random() * selectedEventForGallery.images!.length));
+                } else {
+                    setCurrentGalleryImageIndex((prev) => (prev + 1) % selectedEventForGallery.images!.length);
+                }
+            }, 3000); // 3 seconds per slide
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isAutoPlaying, isShuffled, selectedEventForGallery]);
 
     const { data: events, isLoading } = useQuery<Event[]>({
         queryKey: ["events"],
@@ -89,16 +111,13 @@ export default function Events() {
     });
 
     const bookingMutation = useMutation({
-        mutationFn: async ({ eventId, paymentId, amount }: { eventId: string; paymentId: string; amount: number }) => {
+        mutationFn: async ({ eventId, paymentId, amount, bookingId }: { eventId: string; paymentId: string; amount: number; bookingId?: string }) => {
             const { data, error } = await supabase
                 .from('bookings')
-                .insert({
-                    event_id: eventId,
-                    user_id: user?.id,
-                    payment_status: 'completed',
-                    payment_id: paymentId,
-                    amount: amount
-                });
+                .update({ payment_status: 'paid', payment_id: paymentId })
+                .eq('event_id', eventId)
+                .eq('user_id', user?.id)
+                .eq('payment_status', 'pending');
             if (error) throw error;
             return data;
         },
@@ -111,9 +130,37 @@ export default function Events() {
         }
     });
 
+    const createPendingBooking = async (eventId: string, amount: string) => {
+        const { data: existing } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('event_id', eventId)
+            .eq('user_id', user?.id)
+            .eq('payment_status', 'pending')
+            .maybeSingle();
+
+        if (existing) return existing;
+
+        const { data, error } = await supabase
+            .from('bookings')
+            .insert({
+                event_id: eventId,
+                user_id: user?.id,
+                payment_status: 'pending',
+                amount: amount
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    };
+
     const handleBookNow = async (event: Event) => {
         if (!user) {
             toast({ title: "Login Required", description: "Please login to book events.", variant: "destructive" });
+            sessionStorage.setItem("redirect_after_login", "/events");
+            setLocation("/auth");
             return;
         }
         setBookingEvent(event);
@@ -122,21 +169,21 @@ export default function Events() {
     const initializeStripe = async (event: Event) => {
         setPaymentMethod('stripe');
         try {
-            // Need a generic payment intent or specialized for events
-            // I'll reuse the/api/create-payment-intent by passing amount/metadata if I can, 
-            // but the current routes handle specific plans. 
-            // I'll assume for now I should use a custom amount if I can or it handles it.
-            // Actually I'll check routes.ts again.
-            const res = await apiRequest("POST", "/api/create-payment-intent", { amount: Number(event.price) * 100, eventId: event.id });
+            const booking = await createPendingBooking(event.id, event.price?.toString() || "0");
+            const res = await apiRequest("POST", "/api/create-payment-intent", {
+                amount: Number(event.price) * 100,
+                eventId: event.id,
+                bookingId: booking.id
+            });
             const data = await res.json();
             setClientSecret(data.clientSecret);
         } catch (err) {
-            toast({ title: "Failed to initialize payment" });
+            toast({ title: "Failed to initialize payment", variant: "destructive" });
         }
     };
 
     const isBooked = (eventId: string) => {
-        return userBookings?.some(b => b.eventId === eventId);
+        return userBookings?.some(b => b.eventId === eventId && (b.paymentStatus === 'paid' || b.paymentStatus === 'completed'));
     };
 
     if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>;
@@ -153,13 +200,25 @@ export default function Events() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {events?.map((event) => (
                             <Card key={event.id} className="flex flex-col h-full hover:shadow-lg transition-all border-slate-200">
-                                <div className="aspect-video relative overflow-hidden bg-slate-100">
+                                <div className="aspect-video relative overflow-hidden bg-slate-100 group cursor-pointer" onClick={() => {
+                                    if (event.images && event.images.length > 0) {
+                                        setSelectedEventForGallery(event);
+                                        setCurrentGalleryImageIndex(0);
+                                    }
+                                }}>
                                     {event.images?.[0] ? (
-                                        <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover" />
+                                        <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-slate-400">No Image</div>
                                     )}
-                                    <div className="absolute top-4 right-4 bg-[#b8240d] text-white px-3 py-1 rounded-full font-bold">
+
+                                    {event.images && event.images.length > 0 && (
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <Maximize2 className="text-white h-8 w-8" />
+                                        </div>
+                                    )}
+
+                                    <div className="absolute top-4 right-4 bg-[#b8240d] text-white px-3 py-1 rounded-full font-bold z-10">
                                         ${event.price || "0"}
                                     </div>
                                 </div>
@@ -215,21 +274,31 @@ export default function Events() {
                                             <PayPalScriptProvider options={{ clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID || "test" }}>
                                                 <PayPalButtons
                                                     style={{ layout: "horizontal" }}
-                                                    createOrder={(data, actions) => {
-                                                        return actions.order.create({
-                                                            intent: "CAPTURE",
-                                                            purchase_units: [{
-                                                                amount: {
-                                                                    currency_code: "USD",
-                                                                    value: (event.price || "0").toString()
-                                                                }
-                                                            }]
+                                                    createOrder={async () => {
+                                                        const booking = await createPendingBooking(event.id, event.price?.toString() || "0");
+                                                        const res = await apiRequest("POST", "/api/create-paypal-order", {
+                                                            amount: Number(event.price),
+                                                            eventId: event.id,
+                                                            bookingId: booking.id
                                                         });
+                                                        const data = await res.json();
+                                                        return data.id;
                                                     }}
-                                                    onApprove={(data, actions) => {
-                                                        return actions.order!.capture().then((details) => {
-                                                            bookingMutation.mutate({ eventId: event.id, paymentId: details.id as string, amount: Number(event.price || 0) });
-                                                        });
+                                                    onApprove={async (data) => {
+                                                        try {
+                                                            const res = await apiRequest("POST", "/api/capture-paypal-order", {
+                                                                orderID: data.orderID
+                                                            });
+                                                            const captureData = await res.json();
+                                                            if (captureData.status === "COMPLETED") {
+                                                                bookingMutation.mutate({ eventId: event.id, paymentId: data.orderID, amount: Number(event.price || 0) });
+                                                            } else {
+                                                                toast({ title: "Payment failed", variant: "destructive", description: "Payment could not be captured." });
+                                                            }
+                                                        } catch (err) {
+                                                            console.error("PayPal Capture Error", err);
+                                                            toast({ title: "Payment capture error", variant: "destructive" });
+                                                        }
                                                     }}
                                                 />
                                             </PayPalScriptProvider>
@@ -242,6 +311,68 @@ export default function Events() {
                     </div>
                 </div>
             </section>
+
+            {/* Fullscreen Gallery Overlay */}
+            {selectedEventForGallery && selectedEventForGallery.images && selectedEventForGallery.images.length > 0 && (
+                <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+                    <button
+                        className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-[60] p-2 bg-black/40 rounded-full"
+                        onClick={() => {
+                            setSelectedEventForGallery(null);
+                            setIsAutoPlaying(false);
+                            setIsShuffled(false);
+                        }}
+                    >
+                        <X className="h-8 w-8" />
+                    </button>
+
+                    {selectedEventForGallery.images.length > 1 && (
+                        <>
+                            <button
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors p-4 z-[60] bg-black/40 rounded-full"
+                                onClick={() => setCurrentGalleryImageIndex((prev) => (prev - 1 + selectedEventForGallery.images!.length) % selectedEventForGallery.images!.length)}
+                            >
+                                <ChevronLeft className="h-10 w-10" />
+                            </button>
+                            <button
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors p-4 z-[60] bg-black/40 rounded-full"
+                                onClick={() => setCurrentGalleryImageIndex((prev) => (prev + 1) % selectedEventForGallery.images!.length)}
+                            >
+                                <ChevronRight className="h-10 w-10" />
+                            </button>
+                        </>
+                    )}
+
+                    <div className="w-screen h-screen flex items-center justify-center relative bg-black">
+                        <img
+                            src={selectedEventForGallery.images[currentGalleryImageIndex]}
+                            alt={`Gallery image ${currentGalleryImageIndex + 1}`}
+                            className="w-full h-full object-cover select-none"
+                        />
+                    </div>
+
+                    {selectedEventForGallery.images.length > 1 && (
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 text-white bg-black/60 backdrop-blur-sm px-6 py-3 rounded-full font-medium shadow-lg border border-white/10 z-[60]">
+                            <span>{currentGalleryImageIndex + 1} / {selectedEventForGallery.images.length}</span>
+                            <div className="h-6 w-px bg-white/20 mx-2"></div>
+                            <button
+                                onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+                                className={`text-sm tracking-wider font-bold transition-colors ${isAutoPlaying ? "text-green-400" : "hover:text-gray-300"}`}
+                            >
+                                {isAutoPlaying ? "STOP PLAYING" : "AUTO-PLAY"}
+                            </button>
+                            <div className="h-6 w-px bg-white/20 mx-2"></div>
+                            <button
+                                onClick={() => setIsShuffled(!isShuffled)}
+                                className={`text-sm tracking-wider font-bold transition-colors ${isShuffled ? "text-purple-400" : "hover:text-gray-300"}`}
+                            >
+                                {isShuffled ? "SHUFFLE: ON" : "SHUFFLE: OFF"}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
         </div>
     );
 }

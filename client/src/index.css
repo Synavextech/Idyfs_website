@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,8 +13,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 240 100% 25%; /* #04047a - Deep Blue */
-    --primary-foreground: 210 40% 98%;
+    --primary: 236 94% 25%;
+    /* Rich Deep Blue for high contrast */
+    --primary-foreground: 0 0% 100%;
+    /* Pure white text */
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -23,17 +24,20 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 10 90% 40%; /* #b8240d - Red Accent */
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 12 87% 41%;
+    /* Vibrant Red #c22912 Accent for strong CTA presence */
+    --accent-foreground: 0 0% 100%;
+    /* Pure white text for accent */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 236 94% 25%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+    /* Smoother border radii globally */
   }
 
   .dark {
@@ -46,7 +50,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 236 94% 65%;
+    /* Brighten primary for dark mode so it stands out */
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -55,15 +60,16 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 10 90% 40%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 12 90% 64%;
+    /* Bright, popping red for dark mode CTAs */
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 236 94% 65%;
   }
 }
 
@@ -71,7 +77,18 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground tracking-tight;
+  }
+}
+
+@layer utilities {
+  .btn-hover-effect {
+    @apply transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md;
+  }
+
+  .card-hover-effect {
+    @apply transition-all duration-300 ease-in-out hover:shadow-xl hover:border-primary/30;
   }
 }

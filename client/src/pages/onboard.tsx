@@ -21,7 +21,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
 const QUESTIONS = [
     {
         id: 1,
-        question: "What does IDYFS stand for?",
+        question: "What does IDYFS stand for? - Development Youth Foundation Services",
         options: [
             "International Development Youth Foundation Services",
             "International Development Youth Forum Services",
@@ -32,13 +32,13 @@ const QUESTIONS = [
     },
     {
         id: 2,
-        question: "Which continent does IDYFS primarily focus on?",
+        question: "Which continent does IDYFS primarily focus on? - Africa",
         options: ["Asia", "Europe", "Africa", "South America"],
         correctAnswer: 2
     },
     {
         id: 3,
-        question: "What is one of the primary goals of IDYFS?",
+        question: "What is one of the primary goals of IDYFS? - hint - Certification for IDYFS for NGOs",
         options: [
             "To promote technology startups",
             "To Provide Certificate for IDYFS for NGOs",
@@ -49,7 +49,7 @@ const QUESTIONS = [
     },
     {
         id: 4,
-        question: "What type of organizations can join IDYFS?",
+        question: "What type of organizations can join IDYFS? - hint - NGOs",
         options: [
             "Only government bodies",
             "Only profit-making companies",
@@ -60,7 +60,7 @@ const QUESTIONS = [
     },
     {
         id: 5,
-        question: "What does IDYFS aim to protect?",
+        question: "What does IDYFS aim to protect? - hint - NGO staff rights",
         options: [
             "Environmental laws",
             "NGO staff rights",
@@ -71,40 +71,40 @@ const QUESTIONS = [
     },
     {
         id: 6,
-        question: "Who benefits from IDYFS's work?",
+        question: "Who benefits from IDYFS's work? - hint - NGO staff and organizations",
         options: [
             "Government officials",
             "NGO staff and organizations",
             "Large corporations",
             "Private investors"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 7,
-        question: "What is a key component of IDYFS's mission?",
+        question: "What is a key component of IDYFS's mission? - hint - Work staff ethics",
         options: [
             "Work staff ethics",
             "Stock market investment",
             "Political campaigns",
             "Real estate development"
         ],
-        correctAnswer: 1
+        correctAnswer: 0
     },
     {
         id: 8,
-        question: "Which of these is a benefit of joining IDYFS?",
+        question: "Which of these is a benefit of joining IDYFS? - hint - Enhanced protection for NGO staff",
         options: [
             "Access to social media followers",
             "Enhanced protection for NGO staff",
             "Membership in a global banking network",
             "Discounts on international flights"
         ],
-        correctAnswer: 3
+        correctAnswer: 1
     },
     {
         id: 9,
-        question: "IDYFS primarily works in which sector?",
+        question: "IDYFS primarily works in which sector? - hint - Non-Governmental Organizations",
         options: [
             "Tourism",
             "Non-Governmental Organizations",
@@ -115,29 +115,29 @@ const QUESTIONS = [
     },
     {
         id: 10,
-        question: "How does IDYFS help NGOs?",
+        question: "How does IDYFS help NGOs? - hint - By protecting staff rights",
         options: [
             "By offering travel services",
             "By protecting staff rights",
             "By developing gaming apps",
             "By running educational courses"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 11,
-        question: "What is a focus area of IDYFS regarding staff?",
+        question: "What is a focus area of IDYFS regarding staff? - hint - Staff rights protection",
         options: [
             "Staff relocation services",
             "Staff rights protection",
             "Social media management",
             "Staff entertainment programs"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 12,
-        question: "What type of ethics does IDYFS promote?",
+        question: "What type of ethics does IDYFS promote? - hint - Work staff ethics",
         options: [
             "Corporate ethics",
             "Work staff ethics",
@@ -148,84 +148,84 @@ const QUESTIONS = [
     },
     {
         id: 13,
-        question: "Who can become a member of IDYFS?",
+        question: "Who can become a member of IDYFS? - hint - Any individual",
         options: [
             "Any individual",
             "Government agencies only",
             "NGOs in Africa",
             "Multinational corporations"
         ],
-        correctAnswer: 1
+        correctAnswer: 0
     },
     {
         id: 14,
-        question: "What is one benefit of IDYFS membership for NGOs?",
+        question: "What is one benefit of IDYFS membership for NGOs? - hint - Ownership of properties",
         options: [
             "Tax exemptions",
             "Networking opportunities",
             "Ownership of properties",
             "Personal loans"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 15,
-        question: "What does IDYFS stand against in NGO workplaces?",
+        question: "What does IDYFS stand against in NGO workplaces? - hint - staff abuse",
         options: [
             "High salaries",
             "Work staff abuse",
             "Profit-making",
             "Government policies"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 16,
-        question: "What is the full form of NGO?",
+        question: "What is the full form of NGO? - hint - Non-Governmental Organization",
         options: [
             "Non-Governmental Organization",
             "National Government Organization",
             "Non-Growth Organization",
             "National General Office"
         ],
-        correctAnswer: 1
+        correctAnswer: 0
     },
     {
         id: 17,
-        question: "Which of these is a key ethical practice promoted by IDYFS?",
+        question: "Which of these is a key ethical practice promoted by IDYFS? - hint - Transparency in operations",
         options: [
             "Data monetization",
             "Transparency in operations",
             "Profit maximization",
             "Exclusive partnerships"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 18,
-        question: "What legal frameworks does IDYFS help NGOs comply with?",
+        question: "What legal frameworks does IDYFS help NGOs comply with? - hint - NGO operational standards and staff rights laws",
         options: [
             "International trade laws",
             "NGO operational standards and staff rights laws",
             "Financial market regulations",
             "Real estate laws"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 19,
-        question: "What is the significance of staff rights in IDYFS's work?",
+        question: "What is the significance of staff rights in IDYFS's work? - hint - It safeguards NGO staff from exploitation",
         options: [
             "It ensures proper marketing",
             "It safeguards NGO staff from exploitation",
             "It increases NGO profitability",
             "It develops staff technical skills"
         ],
-        correctAnswer: 2
+        correctAnswer: 1
     },
     {
         id: 20,
-        question: "Which of the following is a core principle of IDYFS's ethical guidelines?",
+        question: "Which of the following is a core principle of IDYFS's ethical guidelines? - hint - Confidentiality of donor information",
         options: [
             "Confidentiality of donor information",
             "High-profit returns",
@@ -281,6 +281,7 @@ function StripePaymentForm({ onSuccess }: { onSuccess: () => void }) {
 export default function Onboard() {
     const [step, setStep] = useState<'intro' | 'quiz' | 'details' | 'membership' | 'payment' | 'complete'>('intro');
     const [answers, setAnswers] = useState<Record<number, number>>({});
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -297,6 +298,8 @@ export default function Onboard() {
     }
 
     const handleStartQuiz = () => {
+        setCurrentQuestionIndex(0);
+        setAnswers({});
         setStep('quiz');
     };
 
@@ -465,12 +468,21 @@ export default function Onboard() {
                     {step === 'intro' && (
                         <>
                             <CardHeader>
-                                <CardTitle>IDYFS Eligibility Test</CardTitle>
-                                <CardDescription>
-                                    To ensure our members are aligned with our mission, please take this brief eligibility test.
-                                    It consists of {QUESTIONS.length} multiple-choice questions.
-                                </CardDescription>
+                                <CardTitle className="text-2xl text-[#04047a]">Welcome to IDYFS Eligibility Test</CardTitle>
                             </CardHeader>
+                            <CardContent className="text-base text-gray-700 space-y-4">
+                                <div className="space-y-4">
+                                    <p>
+                                        At the <strong>International Development Youth Foundation Services (IDYFS)</strong>, we are committed to empowering individuals, youths, and NGOs to make a meaningful impact in our communities. We focus on networking, leadership development, skills training, and protecting staff rights across the globe.
+                                    </p>
+                                    <p>
+                                        To ensure that our members share our core values and understand our mission, we require an initial eligibility test. This interactive process helps us maintain a dedicated network of scholars, leaders, and organizations aligned with fostering innovation and sustainable development.
+                                    </p>
+                                </div>
+                                <div className="bg-blue-50 p-4 rounded-md text-sm text-[#04047a]">
+                                    <strong>Instructions:</strong> The test consists of {QUESTIONS.length} multiple-choice questions. Don't worry if you don't know all the answers right away—we've provided brief hints in brackets at the end of each question to guide you on our principles!
+                                </div>
+                            </CardContent>
                             <CardFooter>
                                 <Button className="w-full" onClick={handleStartQuiz}>Start Test</Button>
                             </CardFooter>
@@ -480,26 +492,66 @@ export default function Onboard() {
                     {step === 'quiz' && (
                         <>
                             <CardHeader>
-                                <CardTitle>Eligibility Test</CardTitle>
+                                <div className="flex justify-between items-center mb-2">
+                                    <CardTitle>Eligibility Test</CardTitle>
+                                    <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                        Question {currentQuestionIndex + 1} of {QUESTIONS.length}
+                                    </span>
+                                </div>
                                 <CardDescription>Answer the following questions correctly to proceed.</CardDescription>
+                                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mt-4">
+                                    <div className="bg-primary h-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%` }}></div>
+                                </div>
                             </CardHeader>
-                            <CardContent className="space-y-8">
-                                {QUESTIONS.map((q, index) => (
-                                    <div key={q.id} className="space-y-4">
-                                        <h3 className="font-medium text-gray-900">{index + 1}. {q.question}</h3>
-                                        <RadioGroup onValueChange={(val: string) => handleAnswer(q.id, parseInt(val))}>
-                                            {q.options.map((option, optIdx) => (
-                                                <div key={optIdx} className="flex items-center space-x-2">
-                                                    <RadioGroupItem value={optIdx.toString()} id={`q${q.id}-opt${optIdx}`} />
-                                                    <Label htmlFor={`q${q.id}-opt${optIdx}`}>{option}</Label>
-                                                </div>
-                                            ))}
-                                        </RadioGroup>
-                                    </div>
-                                ))}
+                            <CardContent className="space-y-8 pt-6">
+                                {QUESTIONS[currentQuestionIndex] && (() => {
+                                    const q = QUESTIONS[currentQuestionIndex];
+                                    const hintText = q.question.includes('- hint -') ? q.question.split('- hint -')[1].trim() : '';
+                                    const questionText = q.question.split('- hint -')[0].trim();
+                                    return (
+                                        <div className="space-y-6 min-h-[250px] animate-in fade-in duration-500">
+                                            <h3 className="text-xl font-medium text-gray-900 leading-snug">
+                                                {currentQuestionIndex + 1}. {questionText}
+                                                {hintText && <span className="text-sm text-gray-500 block mt-2 italic">Hint: {hintText}</span>}
+                                            </h3>
+                                            <RadioGroup value={answers[q.id]?.toString()} onValueChange={(val: string) => handleAnswer(q.id, parseInt(val))} className="space-y-3">
+                                                {q.options.map((option, optIdx) => (
+                                                    <div key={optIdx} className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${answers[q.id] === optIdx ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-primary/50 hover:bg-slate-50'}`}>
+                                                        <RadioGroupItem value={optIdx.toString()} id={`q${q.id}-opt${optIdx}`} />
+                                                        <Label htmlFor={`q${q.id}-opt${optIdx}`} className="flex-1 cursor-pointer text-base">{option}</Label>
+                                                    </div>
+                                                ))}
+                                            </RadioGroup>
+                                        </div>
+                                    );
+                                })()}
                             </CardContent>
-                            <CardFooter>
-                                <Button className="w-full" onClick={handleSubmitQuiz}>Submit Answers</Button>
+                            <CardFooter className="flex justify-between border-t pt-6">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                                    disabled={currentQuestionIndex === 0}
+                                    className="w-24"
+                                >
+                                    Previous
+                                </Button>
+                                {currentQuestionIndex < QUESTIONS.length - 1 ? (
+                                    <Button
+                                        onClick={() => setCurrentQuestionIndex(prev => Math.min(QUESTIONS.length - 1, prev + 1))}
+                                        className="w-32 btn-hover-effect"
+                                        disabled={answers[QUESTIONS[currentQuestionIndex].id] === undefined}
+                                    >
+                                        Next
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={handleSubmitQuiz}
+                                        className="w-32 bg-green-600 hover:bg-green-700 text-white btn-hover-effect"
+                                        disabled={answers[QUESTIONS[currentQuestionIndex].id] === undefined}
+                                    >
+                                        Submit
+                                    </Button>
+                                )}
                             </CardFooter>
                         </>
                     )}
@@ -601,13 +653,13 @@ export default function Onboard() {
                                 <div className="space-y-4 pt-4 border-t items-center">
                                     <Label className="text-base font-semibold">Payment Method</Label>
                                     <RadioGroup value={paymentMethod} onValueChange={(val: any) => setPaymentMethod(val)} className="flex space-x-4">
-                                                                                <div className="flex items-center space-x-2">
+                                        <div className="flex items-center space-x-2">
                                             <RadioGroupItem value="paypal" id="paypal" />
-                                            <Label htmlFor="paypal">PayPal/card</Label>
+                                            <Label htmlFor="paypal">PayPal Checkout</Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <RadioGroupItem value="stripe" id="stripe" />
-                                            <Label htmlFor="stripe">Other options</Label>
+                                            <Label htmlFor="stripe">Credit/Debit Card (prepaid card only)</Label>
                                         </div>
                                     </RadioGroup>
                                 </div>

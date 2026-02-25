@@ -66,7 +66,7 @@ export function registerRoutes(app: Express): Server {
 
     app.post("/api/create-payment-intent", async (req, res) => {
         try {
-            const { plan, amount: customAmount, eventId } = req.body;
+            const { plan, amount: customAmount, eventId, bookingId } = req.body;
             let amount = customAmount || 0;
 
             if (plan) {
@@ -100,7 +100,7 @@ export function registerRoutes(app: Express): Server {
                 automatic_payment_methods: {
                     enabled: true,
                 },
-                metadata: { plan, eventId }
+                metadata: { plan, eventId, bookingId }
                 // Metadata is optional since user might not be created yet (onboarding flow)
             });
 
@@ -111,6 +111,178 @@ export function registerRoutes(app: Express): Server {
             console.error("Stripe Error:", error);
             res.status(500).json({ message: "Payment setup failed" });
         }
+    });
+
+    app.post("/api/stripe-webhook", async (req, res) => {
+        const sig = req.headers['stripe-signature'];
+        const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || process.env.VITE_STRIPE_WEBHOOK_SECRET;
+
+        let event;
+
+        try {
+            event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret!);
+        } catch (err: any) {
+            console.error(`Stripe Webhook Error: ${err.message}`);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+
+        if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
+            const paymentIntent = event.data.object as any;
+            const bookingId = paymentIntent.metadata?.bookingId;
+
+            if (bookingId) {
+                const serviceRoleKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+                const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
+                await adminSupabase
+                    .from('bookings')
+                    .update({ payment_status: 'paid', payment_id: paymentIntent.id })
+                    .eq('id', bookingId);
+            }
+        }
+        res.json({ received: true });
+    });
+
+    app.post("/api/create-paypal-order", async (req, res) => {
+        try {
+            const { amount, eventId, bookingId } = req.body;
+
+            if (!amount || amount <= 0) {
+                return res.status(400).json({ message: "Invalid amount" });
+            }
+
+            const clientId = process.env.PAYPAL_CLIENT_ID || process.env.VITE_PAYPAL_CLIENT_ID;
+            const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+            const isLive = process.env.PAYPAL_MODE === "live";
+            const baseURL = isLive ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+            if (!clientId || !clientSecret) {
+                console.warn("PayPal credentials missing");
+                return res.status(500).json({ message: "PayPal is not configured" });
+            }
+
+            const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+            // Get Access Token
+            const tokenResponse = await fetch(`${baseURL}/v1/oauth2/token`, {
+                method: "POST",
+                body: "grant_type=client_credentials",
+                headers: {
+                    Authorization: `Basic ${auth}`,
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            });
+
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.access_token;
+
+            // Create Order
+            const orderResponse = await fetch(`${baseURL}/v2/checkout/orders`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    intent: "CAPTURE",
+                    purchase_units: [{
+                        amount: {
+                            currency_code: "USD",
+                            value: amount.toString()
+                        },
+                        custom_id: bookingId
+                    }]
+                })
+            });
+
+            const orderData = await orderResponse.json();
+            if (!orderData.id) {
+                console.error("PayPal Create Order returned error: ", JSON.stringify(orderData, null, 2));
+            }
+            res.json({ id: orderData.id });
+        } catch (error) {
+            console.error("PayPal Order Creation Error:", error);
+            res.status(500).json({ message: "Failed to create PayPal order" });
+        }
+    });
+
+    app.post("/api/capture-paypal-order", async (req, res) => {
+        try {
+            const { orderID } = req.body;
+
+            if (!orderID) {
+                return res.status(400).json({ message: "Order ID is required" });
+            }
+
+            const clientId = process.env.PAYPAL_CLIENT_ID || process.env.VITE_PAYPAL_CLIENT_ID;
+            const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+            const isLive = process.env.PAYPAL_MODE === "live";
+            const baseURL = isLive ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+            if (!clientId || !clientSecret) {
+                return res.status(500).json({ message: "PayPal is not configured" });
+            }
+
+            const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+            // Get Access Token
+            const tokenResponse = await fetch(`${baseURL}/v1/oauth2/token`, {
+                method: "POST",
+                body: "grant_type=client_credentials",
+                headers: {
+                    Authorization: `Basic ${auth}`,
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            });
+
+            const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.access_token;
+
+            // Capture Order
+            const captureResponse = await fetch(`${baseURL}/v2/checkout/orders/${orderID}/capture`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            const captureData = await captureResponse.json();
+
+            if (captureData.status === "COMPLETED") {
+                // Update booking status in DB immediately (fallback to webhook context)
+                const customId = captureData.purchase_units?.[0]?.custom_id;
+                if (customId) {
+                    const serviceRoleKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+                    const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
+                    await adminSupabase
+                        .from('bookings')
+                        .update({ payment_status: 'paid', payment_id: orderID })
+                        .eq('id', customId);
+                }
+            }
+
+            res.json(captureData);
+        } catch (error) {
+            console.error("PayPal Capture Error:", error);
+            res.status(500).json({ message: "Failed to capture PayPal order" });
+        }
+    });
+
+    app.post("/api/paypal-webhook", async (req, res) => {
+        const event = req.body;
+        if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED' || event.event_type === 'CHECKOUT.ORDER.APPROVED') {
+            const orderId = event.resource?.id;
+            const customId = event.resource?.custom_id; // mapped to booking.id
+            if (customId) {
+                const serviceRoleKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+                const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
+                await adminSupabase
+                    .from('bookings')
+                    .update({ payment_status: 'paid', payment_id: orderId })
+                    .eq('id', customId);
+            }
+        }
+        res.json({ received: true });
     });
 
 

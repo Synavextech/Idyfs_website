@@ -19,10 +19,11 @@ export default function Footer() {
                                 { label: "Membership", href: "/onboard" }
                             ].map((item) => (
                                 <li key={item.href}>
-                                    <Link href={item.href}>
-                                        <a className="hover:text-accent transition-colors text-sm">
-                                            {item.label}
-                                        </a>
+                                    <Link
+                                        href={item.href}
+                                        className="hover:text-accent transition-colors text-sm"
+                                    >
+                                        {item.label}
                                     </Link>
                                 </li>
                             ))}
@@ -35,15 +36,15 @@ export default function Footer() {
                         <ul className="space-y-3">
                             <li className="flex items-center space-x-2 text-sm">
                                 <Mail className="h-4 w-4 text-accent" />
-                                <span>contact@idyfs.com</span>
+                                <span>support@worldyouthcentre.org</span>
                             </li>
                             <li className="flex items-center space-x-2 text-sm">
                                 <Phone className="h-4 w-4 text-accent" />
-                                <span>+123 456 7890</span>
+                                <span>+17209948847</span>
                             </li>
                             <li className="flex items-center space-x-2 text-sm">
                                 <MapPin className="h-4 w-4 text-accent" />
-                                <span>123 Development Way, Global City</span>
+                                <span>4334 Rider Trail, philtop, colorado, USA</span>
                             </li>
                         </ul>
                     </div>
